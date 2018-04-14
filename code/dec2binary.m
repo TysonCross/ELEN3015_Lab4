@@ -15,8 +15,7 @@ else
 end
         
 decimal = uint64(decimal);
-% value = uint64(num_of_bits-1:-1:0);                      	% Array of exponents for binary entries
-value = uint64(0:num_of_bits-1);                      	% Array of exponents for binary entries
+value = uint64(num_of_bits-1:-1:0);                      	% Array of exponents for binary entries
 base = uint64(2).^value;                              	% Decimal values for each bit
 
 if decimal > sum(uint64(base), 'native')
@@ -24,13 +23,11 @@ if decimal > sum(uint64(base), 'native')
 end
 
 bin = false(1,num_of_bits);                             % Initialise logical array
-i = num_of_bits;
-while decimal>0
+for i=1:num_of_bits
     if decimal >= base(i)                               % For each applicable column of 2^i
         decimal = decimal - base(i);                    % Reduce the value of decimal
         bin(i) = true;                                  % Set the binary bit
     end
-    i = i - 1;                                          % Update the iterating count
 end
 
 end

@@ -1,4 +1,4 @@
-function [ H M ] = hash( message )
+function [ H padded_message ] = hash(message)
 %hashSHA256() hashes an input message with an implementation of SHA256
 % Input message must be split into 512-bit blocks
 % See FIPS PUB 180-4 forthe implementation standard
@@ -39,11 +39,11 @@ if ~islogical(message)
 end
 
 % Pad to make the message a multiple of 512
-M = padder(message);
-assert(mod(numel(M),512)==0);
+padded_message = padder(message);
+assert(mod(numel(padded_message),512)==0);
 
 % Parse into n blocks of 512 bits
-M = reshape(M,[],512);
+M = reshape(padded_message,[],512);
 [n m] = size(M);
 
 % Process message blocks
@@ -55,33 +55,87 @@ end
    
 end
 
+%% Secure hash functions
 function [ word ] = Ch(x,y,z)
+    checkLength(x,32);
+    checkLength(y,32);
+    checkLength(z,32);
+    checkLogical([x y z]);
     a = bitand(x,y);
-    b = bitand(bitcmp(x),z);
+    b = bitand(~x,z);
     word = bitxor(a,b);
 end
 
 function [ word ] = Maj(x,y,z)
+    checkLength(x,32);
+    checkLength(y,32);
+    checkLength(z,32);
+    checkLogical([x y z]);
     word = bitxor(bitxor(x,y),z);
 end
 
-function [ output ] = E_1(x)
+function [ word ] = E_0(x)
+    checkLogical(x);
+    checkLength(x,32);
+    word = bitxor(bitxor(ROTR(x,2),ROTR(x,13)),ROTR(x,22));
 end
 
-function [ output ] = E_2(x)
+function [ word ] = E_1(x)
+    checkLogical(x);
+    checkLength(x,32);
+    word = bitxor(bitxor(ROTR(x,6),ROTR(x,11)),ROTR(x,25));
 end
 
-function [ output ] = sigma_1(x)
+function [ word ] = sigma_0(x)
+    checkLogical(x);
+    checkLength(x,32);
+    word = bitxor(bitxor(ROTR(x,7),ROTR(x,18)),SHR(x,3));
 end
 
-function [ output ] = sigma_2(x)
+function [ word ] = sigma_1(x)
+    checkLogical(x);
+    checkLength(x,32);
+    word = bitxor(bitxor(ROTR(x,17),ROTR(x,19)),SHR(x,10));
 end
 
-function [output] = ROTL ( x, n)
+function [word] = ROTL (x,n)
+    checkLogical(x);
+    checkLength(x,32);
+    checkRange(n,0,32);
+    word = circshift(x,-n);
 end
 
-function [output] = ROTR ( x, n)
+function [word] = ROTR (x,n)
+    checkLogical(x);
+    checkLength(x,32);
+    checkRange(n,0,32);
+    word = circshift(x,n);
 end
 
-function [output] = SHR ( x, n)
+function [word] = SHR (x,n)
+    checkLength(x,32);
+    checkLogical(x);
+    a = x(1:end-n);             % <- crop rightmost n bits
+    z = false(1,n);             % create logical array of n zeros
+    assert(isequal(length(word),length(x)));
+    word = [z a];            	% pad to complete shift
+end
+
+%% Utility functions
+function checkLogical(input)
+    if ~islogical(input)
+        error('Input must be logical array')
+    end
+end
+
+function checkLength(input, len)
+    if ~length(input)==len
+        error(['Length is not ',num2str(len)])
+    end
+end
+
+function checkRange(input,beg,fin)
+    if ~(beg<=input<fin)
+        error('Input is not within valid range')
+    end
 end

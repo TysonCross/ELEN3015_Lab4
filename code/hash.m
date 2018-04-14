@@ -4,6 +4,8 @@ function [ H M ] = hash( message )
 % See FIPS PUB 180-4 forthe implementation standard
 % http://dx.doi.org/10.6028/NIST.FIPS.180-4
 
+% Tyson Cross 1239448
+
 %{
     a,b,c,d,e,f,g,h : working variables
     W : words of the message schedule
@@ -28,13 +30,58 @@ H = dec2bin(hex2dec(...
 
 
 % message preprocessing
-raw_message = dec2bin(uint32(message));
-len_message = numel(raw_message);
-parsed_message = reshape(raw_message',[1 len_message]);
-
-% make the message a multiple of 512 then parse into n blocks of 512 bits
-M = reshape(padder(parsed_message),[],512);
-
-    
+if ~islogical(message)
+    if ischar(message)
+        message = str2logical(message);
+    elseif isnumeric(message)
+        message = logical(message);
+    end
 end
 
+% Pad to make the message a multiple of 512
+M = padder(message);
+assert(mod(numel(M),512)==0);
+
+% Parse into n blocks of 512 bits
+M = reshape(M,[],512);
+[n m] = size(M);
+
+% Process message blocks
+for i=1:n
+    for t=1:15
+        W = M(i,t);
+    end
+end
+   
+end
+
+function [ word ] = Ch(x,y,z)
+    a = bitand(x,y);
+    b = bitand(bitcmp(x),z);
+    word = bitxor(a,b);
+end
+
+function [ word ] = Maj(x,y,z)
+    word = bitxor(bitxor(x,y),z);
+end
+
+function [ output ] = E_1(x)
+end
+
+function [ output ] = E_2(x)
+end
+
+function [ output ] = sigma_1(x)
+end
+
+function [ output ] = sigma_2(x)
+end
+
+function [output] = ROTL ( x, n)
+end
+
+function [output] = ROTR ( x, n)
+end
+
+function [output] = SHR ( x, n)
+end

@@ -1,3 +1,4 @@
+% Tyson Cross 1239448
 clc; clear all;
 
 % prompt = 'Enter something to hash: ';

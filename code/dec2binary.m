@@ -1,17 +1,25 @@
-function [ bin ] = dec2binary( decimal )
+function [ bin ] = dec2binary( decimal, num_of_bits )
+%dec2binary() converts an unsigned decimal value to a fixed length binary value
+% if the bitdepth is not specified, then an appropriate fixed length is
+% chosen, or 64,32,16 or 8 bits. Accurate conversion from 8 to
+% 64-bits is supported, for decimal values from 0 to intmax('uint64').
+
+% Tyson Cross 1239448
 
 if decimal > intmax('uint64')
    error('Input cannot be greater than intmax(''utint64'')')
 end
 
-if decimal > intmax('uint32')
-    num_of_bits = 64;
-elseif decimal > intmax('uint16')
-    num_of_bits = 32;
-elseif decimal > intmax('uint8')
-    num_of_bits = 16;
-else
-    num_of_bits = 8;
+if nargin<2
+    if decimal > intmax('uint32')
+        num_of_bits = 64;
+    elseif decimal > intmax('uint16')
+        num_of_bits = 32;
+    elseif decimal > intmax('uint8')
+        num_of_bits = 16;
+    else
+        num_of_bits = 8;
+    end
 end
         
 decimal = uint64(decimal);

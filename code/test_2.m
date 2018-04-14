@@ -1,4 +1,5 @@
-clc; clear all;
+clc;
+%clear all;
 
 % prompt = 'Enter something to hash: ';
 % str = input(prompt, 's');
@@ -17,28 +18,18 @@ str = ['This is a long message I wish to hash: To Sherlock Holmes she is always 
         'sensitive instrument, or a crack in one of his own high-power lenses, would not be '...
         'more disturbing than a strong emotion in a nature such as his. And yet there was but '...
         'one woman to him, and that woman was the late Irene Adler, of dubious and questionable memory.'];
-    
-% encode
-raw_message = dec2bin(uint32(str));
-len_message = numel(raw_message);
-bin_message = reshape(raw_message,[1 len_message]);
+message = str;
 
-% make the message a multiple of 512, parsed into n blocks of 512 bits
-message = reshape(padder(bin_message),[],512);
-clear raw_message len_message;
+[ H M ] = hash(str);
 
 
-% decode
-raw_decoded_msg = reshape(bin_message, [numel(bin_message)/7 7]); % parse for decoding
-decoded_msg = char(bin2dec(raw_decoded_msg))';                    % decode into ASCII
+% check the data is being correctly processed
+new_M = reshape(M,1,[]);                                        % flatten into single row
+new_M = new_M(1:floor(numel(new_M)/7)*7);                       % seperate 
+raw_decoded_msg = reshape(new_M, 7, [])';                       % parse for decoding individual characters
+assert(strcmp(new_M(1:7),raw_decoded_msg(1,:)));
+decoded_msg = char(bin2dec(raw_decoded_msg))';               	% decode into ASCII
 
-clear raw_decoded_msg;
+disp(decoded_msg);
 
-assert(strcmp(str,decoded_msg)==1);
 
-disp(message)
-disp(' ')
-disp(decoded_msg)
-
-% message = logical(randi(2, [1 len]) - 1)
-% getByteStreamFromArray(message)

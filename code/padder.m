@@ -8,10 +8,8 @@ bin_len = dec2bin(len,64);                  % 64 bits
 
 k = 0:512;                                  % Brute force find the value of the zero padding
 zero_len = k(mod(len + 1 + k, 512) == 448); % to solve the equation len + 1 + k = 448 mod 512
-
-message = [message 1];                      % add a zero
-message = [message zeros(1,zero_len)];      % pad with zeros
-M = [message bin_len];                      % append the message length in binary (64-bits)
+z(1:zero_len)='0';
+M = [message '1' z bin_len];                  % append the message length in binary (64-bits)
 assert(mod(numel(M),512)==0);
 
 end

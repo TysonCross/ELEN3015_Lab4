@@ -100,7 +100,7 @@ classdef Transaction < handle
             a = squeeze([char(flatten({char([obj.Data{:,1}]) num2str([obj.Data{:,2}]) [obj.ID_me]...
                 [obj.ID_recipient] [obj.ID_sender] num2str(obj.Transation_amount)}))]);
             a = char(a(~isspace(a(:))));
-            obj.Hash = hash(a');
+            obj.Hash = hash(a')
         end
     end
 

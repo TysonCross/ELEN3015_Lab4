@@ -68,14 +68,14 @@ M = permute(reshape(message_flat',[word_length,row/word_length,col]),[3,2,1]);
 
 % Initialise W (word schedule)
 [x,y,z] = size(M);
-W = false(x,y,z);
+W = false(N*x,y,z);
 
 clear x y z row col message_padded message_flat message_logical K1 H1 input ;
 
 % Process message blocks (total of N message blocks)
 % Matlab indexing starts at 1, unfortunately, so H(0) must be treated as H(1)
 for i=1:N; j=i+1;
-    
+
     % Hash computation, Stage 1 
     for t=1:16
         W(i,t,:) = M(i,t,:);
@@ -112,6 +112,7 @@ for i=1:N; j=i+1;
         T_2 = mod_addition(E_0(a), Maj(a,b,c));
         h = g;
         g = f;
+        f = e;
         e = mod_addition(d, T_1);
         d = c;
         c = b;
@@ -131,7 +132,7 @@ for i=1:N; j=i+1;
     H(j,8,:) = mod_addition(h, flattenlogical(H(i,8,:)));
     
     for k=1:8
-        H_N{k} = dec2hex(bin2decimal(logical2char(H(j,k,:))));
+        H_N{k} = dec2hex(bin2decimal(logical2char(H(j,k,:))),8);
     end
 end
 

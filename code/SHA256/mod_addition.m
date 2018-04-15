@@ -8,5 +8,5 @@ function [output] = mod_addition(varargin)
     for i=1:length(varargin)
         value = value + bin2decimal(varargin{i});
     end
-    output = dec2binary(mod(value,mod_value));
+    output = dec2binary(mod(value,mod_value),32);
 end

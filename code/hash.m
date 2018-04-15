@@ -1,19 +1,12 @@
-function [ digest ] = hash(message)
+function [ digest ] = hash( message )
 %hashSHA256() hashes an input message with an implementation of SHA256
 % Input message is padded and split into 512-bit blocks.
 % Output is a 256-bit hexidecimal digest
 % See FIPS PUB 180-4 for the implementation standard
 % http://dx.doi.org/10.6028/NIST.FIPS.180-4
-
 % Tyson Cross 1239448
 
-%{
-    a,b,c,d,e,f,g,h : working variables
-    W : words of the message schedule
-    K: Constants
-    H: Hash value
-%}
-
+% Initialise working variables
 a = false(1,32);
 b = false(1,32);
 c = false(1,32);
@@ -22,6 +15,9 @@ e = false(1,32);
 f = false(1,32);
 g = false(1,32);
 h = false(1,32);
+
+word_length  = 32;
+mod_value = 2^32;
 
 % K is first 32 bits of the fractional parts of the cube roots of the first 64 prime numbers
 K1 = dec2bin(hex2dec(...
@@ -33,14 +29,17 @@ K1 = dec2bin(hex2dec(...
         'a2bfe8a1';'a81a664b';'c24b8b70';'c76c51a3';'d192e819';'d6990624';'f40e3585';'106aa070';...
         '19a4c116';'1e376c08';'2748774c';'34b0bcb5';'391c0cb3';'4ed8aa4a';'5b9cca4f';'682e6ff3';...
         '748f82ee';'78a5636f';'84c87814';'8cc70208';'90befffa';'a4506ceb';'bef9a3f7';'c67178f2']));
-for i=1:64
-    K(i,:) = char2logical(K1(i,:));
-    assert(strcmp(logical2char(K(i,:)),K1(i,:)));
-end
     
 % H is first 32 bits of the fractional parts of the square roots of the first 8 prime numbers
 H1 = dec2bin(hex2dec(...
     [ '6a09e667'; 'bb67ae85'; '3c6ef372'; 'a54ff53a'; '510e527f'; '9b05688c'; '1f83d9ab'; '5be0cd19' ]));
+
+K = false(64,32);
+for i=1:64
+    K(i,:) = char2logical(K1(i,:));
+    assert(strcmp(logical2char(K(i,:)),K1(i,:)));
+end
+
 H = false(1,8,32);
 for i=1:8
     H(1,i,:) = char2logical(H1(i,:));
@@ -50,64 +49,66 @@ end
 % Message preprocessing
 if ~islogical(message)
     if ischar(message)
-        message = str2logical(message);
+        message_logical = str2logical(message);
     elseif isnumeric(message)
-        message = logical(message);
+        message_logical = logical(message);
     end
 end
 
 % Pad to make the message a multiple of 512
-padded_message = padder(message);
-assert(mod(numel(padded_message),512)==0);
+message_padded = padder(message_logical);
+assert(mod(numel(message_padded),512)==0);
 
-% Parse into n blocks of 512 bits
-M_flat = reshape(padded_message,512,[])';
-[n, ~] = size(M_flat);
-[row,col] = size(M_flat');
-word_length  = 32;
-mod_value = 2^32;
-M = permute(reshape(M_flat',[word_length,row/word_length,col]),[3,2,1]);
+% Parse into n blocks of 512 bits, then reshape into 3D matrix (Nx16x32) 
+message_flat = reshape(message_padded,512,[])';
+[N, ~] = size(message_flat);
+[row,col] = size(message_flat');
+M = permute(reshape(message_flat',[word_length,row/word_length,col]),[3,2,1]);
+
+% Initialise W (word schedule)
 [x,y,z] = size(M);
 W = false(x,y,z);
-clear x y z row col M_flat ;
 
-% Process message blocks
-for i=2:n+1
+clear x y z row col message_padded message_flat message_logical K1 H1 input ;
+
+% Process message blocks (total of N message blocks)
+% Matlab indexing starts at 1, unfortunately, so H(0) must be treated as H(1)
+for i=1:N; j=i+1;
     
+    % Hash computation, Stage 1 
     for t=1:16
-        W(i-1,t,:) = M(i-1,t,:);
+        W(i,t,:) = M(i,t,:);
     end
     
     for t=17:64
-        alpha = sigma_1(flattenlogical(W(i-1,t-2,:)));
-        beta = flattenlogical(W(i-1,t-15,:));
-        delta = sigma_0(flattenlogical(W(i-1,t-15,:)));
-        gamma = flattenlogical(W(i-1,t-16,:));
+        alpha = sigma_1(flattenlogical(W(i,t-2,:)));
+        beta = flattenlogical(W(i,t-15,:));
+        delta = sigma_0(flattenlogical(W(i,t-15,:)));
+        gamma = flattenlogical(W(i,t-16,:));
         epsilon = mod_addition(alpha, beta, delta, gamma);
-        W(i-1,t,:) = flattenlogical(epsilon);
+        W(i,t,:) = flattenlogical(epsilon);
         clear alpha beta gamma delta eplison;
     end
     
-    a = flattenlogical(H(i-1,1,:));
-    b = flattenlogical(H(i-1,2,:));
-    c = flattenlogical(H(i-1,3,:));
-    d = flattenlogical(H(i-1,4,:));
-    e = flattenlogical(H(i-1,5,:));
-    f = flattenlogical(H(i-1,6,:));
-    g = flattenlogical(H(i-1,7,:));
-    h = flattenlogical(H(i-1,8,:));
+    % Hash computation, Stage 2
+    a = flattenlogical(H(i,1,:));
+    b = flattenlogical(H(i,2,:));
+    c = flattenlogical(H(i,3,:));
+    d = flattenlogical(H(i,4,:));
+    e = flattenlogical(H(i,5,:));
+    f = flattenlogical(H(i,6,:));
+    g = flattenlogical(H(i,7,:));
+    h = flattenlogical(H(i,8,:));
     
+    % Hash computation, Stage 3
     for t=1:64
-        alpha = E_1(e);
-        beta = Ch(e,f,g);
-        delta = flattenlogical(K(t,:));
-        gamma = flattenlogical(W(i-1,t,:));
-        T_1 = mod_addition(h, alpha, beta, delta, gamma);
-        clear alpha beta gamma delta;
-        alpha = E_0(a);
-        beta = Maj(a,b,c);
-        T_2 = mod_addition(alpha, beta);
-        clear alpha beta;
+        alpha = h;
+        beta = E_1(e);
+        delta = Ch(e,f,g);
+        gamma = flattenlogical(K(t,:));
+        epsilon = flattenlogical(W(i,t,:));
+        T_1 = mod_addition(alpha, beta, delta, gamma, epsilon);
+        T_2 = mod_addition(E_0(a), Maj(a,b,c));
         h = g;
         g = f;
         e = mod_addition(d, T_1);
@@ -115,19 +116,21 @@ for i=2:n+1
         c = b;
         b = a;
         a = mod_addition(T_1, T_2);
+        clear alpha beta gamma delta epsilon;
     end
     
-    H(i,1,:) = mod_addition(a, flattenlogical(H(i-1,1,:)));
-    H(i,2,:) = mod_addition(bin2decimal(b), flattenlogical(H(i-1,2,:)));
-    H(i,3,:) = mod_addition(c, flattenlogical(H(i-1,3,:)));
-    H(i,4,:) = mod_addition(d, flattenlogical(H(i-1,4,:)));
-    H(i,5,:) = mod_addition(e, flattenlogical(H(i-1,5,:)));
-    H(i,6,:) = mod_addition(f, flattenlogical(H(i-1,6,:)));
-    H(i,7,:) = mod_addition(g, flattenlogical(H(i-1,7,:)));
-    H(i,8,:) = mod_addition(h, flattenlogical(H(i-1,8,:)));
+    % Hash computation, Stage 2 - H(jth) intermediate hash value
+    H(j,1,:) = mod_addition(a, flattenlogical(H(i,1,:)));
+    H(j,2,:) = mod_addition(b, flattenlogical(H(i,2,:)));
+    H(j,3,:) = mod_addition(c, flattenlogical(H(i,3,:)));
+    H(j,4,:) = mod_addition(d, flattenlogical(H(i,4,:)));
+    H(j,5,:) = mod_addition(e, flattenlogical(H(i,5,:)));
+    H(j,6,:) = mod_addition(f, flattenlogical(H(i,6,:)));
+    H(j,7,:) = mod_addition(g, flattenlogical(H(i,7,:)));
+    H(j,8,:) = mod_addition(h, flattenlogical(H(i,8,:)));
     
-    for j=1:8
-        H_N{j} = dec2hex(bin2decimal(logical2char(H(i,j,:))));
+    for k=1:8
+        H_N{k} = dec2hex(bin2decimal(logical2char(H(j,k,:))));
     end
 end
 

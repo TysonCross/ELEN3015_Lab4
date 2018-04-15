@@ -1,3 +1,5 @@
+% Tyson Cross 1239448
+
 % a = [1:512];
 % b = reshape(a,64,[]);
 % 

@@ -1,7 +1,8 @@
-function [ H_N ] = hash(message)
+function [ digest ] = hash(message)
 %hashSHA256() hashes an input message with an implementation of SHA256
-% Input message must be split into 512-bit blocks
-% See FIPS PUB 180-4 forthe implementation standard
+% Input message is padded and split into 512-bit blocks.
+% Output is a 256-bit hexidecimal digest
+% See FIPS PUB 180-4 for the implementation standard
 % http://dx.doi.org/10.6028/NIST.FIPS.180-4
 
 % Tyson Cross 1239448
@@ -10,7 +11,7 @@ function [ H_N ] = hash(message)
     a,b,c,d,e,f,g,h : working variables
     W : words of the message schedule
     K: Constants
-    H: Hash 
+    H: Hash value
 %}
 
 a = false(1,32);
@@ -72,21 +73,19 @@ clear x y z row col M_flat ;
 
 % Process message blocks
 for i=2:n+1
+    
     for t=1:16
         W(i-1,t,:) = M(i-1,t,:);
     end
     
     for t=17:64
-        val1 = flattenlogical(W(i-1,t-2,:));
-        val2 = flattenlogical(W(i-1,t-15,:));
-        val3 = flattenlogical(W(i-1,t-15,:));
-        val4 = flattenlogical(W(i-1,t-16,:));
-        alpha = sigma_1(val1);
-        beta = val2;
-        delta = sigma_0(val3);
-        gamma = val4;
-        W(i-1,t,:) = mod_addition(alpha, beta, delta, gamma);
-        clear alpha beta gamma delta val1 val2 val3 val 4;
+        alpha = sigma_1(flattenlogical(W(i-1,t-2,:)));
+        beta = flattenlogical(W(i-1,t-15,:));
+        delta = sigma_0(flattenlogical(W(i-1,t-15,:)));
+        gamma = flattenlogical(W(i-1,t-16,:));
+        epsilon = mod_addition(alpha, beta, delta, gamma);
+        W(i-1,t,:) = flattenlogical(epsilon);
+        clear alpha beta gamma delta eplison;
     end
     
     a = flattenlogical(H(i-1,1,:));
@@ -94,7 +93,7 @@ for i=2:n+1
     c = flattenlogical(H(i-1,3,:));
     d = flattenlogical(H(i-1,4,:));
     e = flattenlogical(H(i-1,5,:));
-    f = flattenlogical(H(i-1,6,:));    
+    f = flattenlogical(H(i-1,6,:));
     g = flattenlogical(H(i-1,7,:));
     h = flattenlogical(H(i-1,8,:));
     
@@ -128,9 +127,10 @@ for i=2:n+1
     H(i,8,:) = mod_addition(h, flattenlogical(H(i-1,8,:)));
     
     for j=1:8
-        H_temp{j} = dec2hex(bin2decimal(logical2char(H(i,j,:))));
+        H_N{j} = dec2hex(bin2decimal(logical2char(H(i,j,:))));
     end
 end
 
-H_N = strjoin(H_temp,'');
+digest = strjoin(H_N,' ');
+
 end

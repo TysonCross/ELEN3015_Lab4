@@ -1,4 +1,6 @@
 function [word] = SHR (x,n)
+% Tyson Cross 1239448
+
     checkLength(x,32);
     checkLogical(x);
     a = x(1:end-n);             % <- crop rightmost n bits

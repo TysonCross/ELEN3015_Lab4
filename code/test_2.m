@@ -1,3 +1,5 @@
+% Tyson Cross 1239448
+
 clc; clear all;
 
 n = 3;

@@ -1,4 +1,6 @@
 function [output] = mod_addition(varargin)
+%mod_addition() implements addition modulo 2^32  §2.2.2
+
 % Tyson Cross 1239448
 
     value = uint64(0);

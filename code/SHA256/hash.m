@@ -1,9 +1,11 @@
 function [ digest ] = hash( message )
-%hashSHA256() hashes an input message with an implementation of SHA256
+%hash() hashes an input message with an implementation of SHA256
+%
 % Input message is padded and split into 512-bit blocks.
-% Output is a 256-bit hexidecimal digest
+% Output is a 256-bit hexidecimal digest (char)
 % See FIPS PUB 180-4 for the implementation standard
 % http://dx.doi.org/10.6028/NIST.FIPS.180-4
+
 % Tyson Cross 1239448
 
 % Initialise working variables
@@ -57,7 +59,6 @@ end
 
 % Pad to make the message a multiple of 512
 message_padded = padder(message_logical);
-assert(mod(numel(message_padded),512)==0);
 
 % Parse into n blocks of 512 bits, then reshape into 3D matrix (Nx16x32) 
 message_flat = reshape(message_padded,512,[])';
@@ -134,6 +135,6 @@ for i=1:N; j=i+1;
     end
 end
 
-digest = strjoin(H_N,' ');
+digest = strjoin(H_N,'');
 
 end

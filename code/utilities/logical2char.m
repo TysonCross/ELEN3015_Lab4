@@ -1,5 +1,3 @@
-% Tyson Cross 1239448
-
 function [ char_array ] = logical2char( logical_array )
 %logicaltochar() converts a logical array into a char array
 

@@ -1,10 +1,10 @@
 % Tyson Cross 1239448
 clc; clear all;
 
-% prompt = 'Enter something to hash: ';
+% prompt = 'Enter something to pad: ';
 % str = input(prompt, 's');
-% str = ['This is a short message I wish to hash'];
-str = ['This is a long message I wish to hash: To Sherlock Holmes she is always the woman.' ...
+% str = ['This is a short message I wish to pad'];
+str = ['This is a long message I wish to pad: To Sherlock Holmes she is always the woman.' ...
         'I have seldom heard him mention her under any other name. In his eyes she eclipses '...
         'and predominates the whole of her sex. It was not that he felt any emotion akin to '...
         'love for Irene Adler. All emotions, and that one particularly, were abhorrent to his '...
@@ -29,17 +29,24 @@ message = reshape(padder(bin_message),[],512);
 clear raw_message len_message;
 
 
-% decode
+% decode to check the data is not being mangled
 raw_decoded_msg = reshape(bin_message, [numel(bin_message)/7 7]); % parse for decoding
 decoded_msg = char(bin2dec(raw_decoded_msg))';                    % decode into ASCII
-
+assert(strcmp(str,decoded_msg)==1);
 clear raw_decoded_msg;
 
-assert(strcmp(str,decoded_msg)==1);
+[n ~] =size(message);
+val = [];
+for i=1:n
+    for j=1:128
+        k=[1:4]+(4*(j-1));
+        val2 = dec2hex(bin2decimal(logical2char(message(i,[k]))));
+        val = [val val2];
+    end
+    M{i} = val;
+    val = [];
+end
 
-disp(message)
+celldisp(M)
 disp(' ')
 disp(decoded_msg)
-
-% message = logical(randi(2, [1 len]) - 1)
-% getByteStreamFromArray(message)

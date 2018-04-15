@@ -32,7 +32,7 @@ classdef Transaction < handle
             elseif strcmp(getSignature(obj,recipient),getSignature(obj,sender))
                 error('Invalid transfer, sender and recipient must be seperate')
             else
-                setBalance(obj,amount,sender);
+                setBalance(obj,-amount,sender);
                 setBalance(obj,amount,recipient);
                 disp(['Transfered ' , num2str(amount), ' tokens to ', getSignature(obj,recipient)]);
                 disp(['New Balance is ',num2str(getBalance(obj,sender)), ' tokens'])
@@ -97,8 +97,10 @@ classdef Transaction < handle
         end
             
         function setHash(obj)
-            a = flatten({char([obj.Data{:,1}]) num2str([obj.Data{:,2}]) [obj.ID_me] [obj.ID_recipient] [obj.ID_sender] num2str(obj.Transation_amount) [obj.Hash]});
-            obj.Hash = hash(a);
+            a = squeeze([char(flatten({char([obj.Data{:,1}]) num2str([obj.Data{:,2}]) [obj.ID_me]...
+                [obj.ID_recipient] [obj.ID_sender] num2str(obj.Transation_amount)}))]);
+            a = char(a(~isspace(a(:))));
+            obj.Hash = hash(a');
         end
     end
 

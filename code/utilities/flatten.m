@@ -7,8 +7,8 @@ for i=1:numel(A)
        Ctemp = flatten(A{i});
        C = [C,Ctemp{:}];
     end
-end
 
-C = char(C(:));
-C = C(~isspace(C(:)));
+end
+	C = squeeze(C(:));
+    C = C(~isspace(C(:)));
 end

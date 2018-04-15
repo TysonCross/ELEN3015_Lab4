@@ -3,7 +3,7 @@ function [ output ] = flattenlogical( input )
 
 % Tyson Cross 1239448
 
-output = char2logical(logical2char(input));
+output = squeeze(char2logical(logical2char(input)));
 
 end
 

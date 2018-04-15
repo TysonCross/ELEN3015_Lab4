@@ -1,8 +1,8 @@
 function [output] = mod_addition(varargin)
-    value = 0;
-    mod_value = 2^32;
+    value = uint64(0);
+    mod_value = uint64(2^32);
     for i=1:length(varargin)
-        value = value + varargin{i};
+        value = value + bin2decimal(varargin{i});
     end
-    output = mod(value,mod_value);
+    output = dec2binary(mod(value,mod_value));
 end

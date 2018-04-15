@@ -1,4 +1,4 @@
-function [ H padded_message W] = hash(message)
+function [ H_N ] = hash(message)
 %hashSHA256() hashes an input message with an implementation of SHA256
 % Input message must be split into 512-bit blocks
 % See FIPS PUB 180-4 forthe implementation standard
@@ -12,6 +12,15 @@ function [ H padded_message W] = hash(message)
     K: Constants
     H: Hash 
 %}
+
+a = false(1,32);
+b = false(1,32);
+c = false(1,32);
+d = false(1,32);
+e = false(1,32);
+f = false(1,32);
+g = false(1,32);
+h = false(1,32);
 
 % K is first 32 bits of the fractional parts of the cube roots of the first 64 prime numbers
 K1 = dec2bin(hex2dec(...
@@ -36,16 +45,6 @@ for i=1:8
     H(1,i,:) = char2logical(H1(i,:));
     assert(strcmp(logical2char(H(1,i,:)),H1(i,:)));
 end
-
-% Intialise variable
-a = flattenlogical(H(1,1,:));
-b = flattenlogical(H(1,2,:));
-c = flattenlogical(H(1,3,:));
-d = flattenlogical(H(1,4,:));
-e = flattenlogical(H(1,5,:));
-f = flattenlogical(H(1,6,:));
-g = flattenlogical(H(1,7,:));
-h = flattenlogical(H(1,8,:));
     
 % Message preprocessing
 if ~islogical(message)
@@ -62,48 +61,48 @@ assert(mod(numel(padded_message),512)==0);
 
 % Parse into n blocks of 512 bits
 M_flat = reshape(padded_message,512,[])';
-[n, m] = size(M_flat);
+[n, ~] = size(M_flat);
 [row,col] = size(M_flat');
 word_length  = 32;
 mod_value = 2^32;
-M  = permute(reshape(M_flat',[word_length,row/word_length,col]),[3,2,1]);
+M = permute(reshape(M_flat',[word_length,row/word_length,col]),[3,2,1]);
+[x,y,z] = size(M);
+W = false(x,y,z);
+clear x y z row col M_flat ;
 
 % Process message blocks
-for i=1:n
+for i=2:n+1
     for t=1:16
-        W(i,t,:) = M(i,t,:);
+        W(i-1,t,:) = M(i-1,t,:);
     end
     
     for t=17:64
-        val1 = flattenlogical(W(i,t-2,:));
-        val2 = flattenlogical(W(i,t-15,:));
-        val3 = flattenlogical(W(i,t-15,:));
-        val4 = flattenlogical(W(i,t-16,:));
-
+        val1 = flattenlogical(W(i-1,t-2,:));
+        val2 = flattenlogical(W(i-1,t-15,:));
+        val3 = flattenlogical(W(i-1,t-15,:));
+        val4 = flattenlogical(W(i-1,t-16,:));
         alpha = sigma_1(val1);
         beta = val2;
         delta = sigma_0(val3);
         gamma = val4;
-        W(i,t,:) = mod_addition(alpha, beta, delta, gamma);
-        clear alpha beta gamma delta;
+        W(i-1,t,:) = mod_addition(alpha, beta, delta, gamma);
+        clear alpha beta gamma delta val1 val2 val3 val 4;
     end
     
-    if i>2
-        a = flattenlogical(H(i-1,1,:));
-        b = flattenlogical(H(i-1,2,:));
-        c = flattenlogical(H(i-1,3,:));
-        d = flattenlogical(H(i-1,4,:));
-        e = flattenlogical(H(i-1,5,:));
-        f = flattenlogical(H(i-1,6,:));    
-        g = flattenlogical(H(i-1,7,:));
-        h = flattenlogical(H(i-1,8,:));
-    end
+    a = flattenlogical(H(i-1,1,:));
+    b = flattenlogical(H(i-1,2,:));
+    c = flattenlogical(H(i-1,3,:));
+    d = flattenlogical(H(i-1,4,:));
+    e = flattenlogical(H(i-1,5,:));
+    f = flattenlogical(H(i-1,6,:));    
+    g = flattenlogical(H(i-1,7,:));
+    h = flattenlogical(H(i-1,8,:));
     
     for t=1:64
         alpha = E_1(e);
         beta = Ch(e,f,g);
         delta = flattenlogical(K(t,:));
-        gamma = flattenlogical(W(i,t,:));
+        gamma = flattenlogical(W(i-1,t,:));
         T_1 = mod_addition(h, alpha, beta, delta, gamma);
         clear alpha beta gamma delta;
         alpha = E_0(a);
@@ -113,12 +112,25 @@ for i=1:n
         h = g;
         g = f;
         e = mod_addition(d, T_1);
-        d= e;
+        d = c;
         c = b;
         b = a;
         a = mod_addition(T_1, T_2);
     end
     
+    H(i,1,:) = mod_addition(a, flattenlogical(H(i-1,1,:)));
+    H(i,2,:) = mod_addition(bin2decimal(b), flattenlogical(H(i-1,2,:)));
+    H(i,3,:) = mod_addition(c, flattenlogical(H(i-1,3,:)));
+    H(i,4,:) = mod_addition(d, flattenlogical(H(i-1,4,:)));
+    H(i,5,:) = mod_addition(e, flattenlogical(H(i-1,5,:)));
+    H(i,6,:) = mod_addition(f, flattenlogical(H(i-1,6,:)));
+    H(i,7,:) = mod_addition(g, flattenlogical(H(i-1,7,:)));
+    H(i,8,:) = mod_addition(h, flattenlogical(H(i-1,8,:)));
+    
+    for j=1:8
+        H_temp{j} = dec2hex(bin2decimal(logical2char(H(i,j,:))));
+    end
 end
-   
+
+H_N = strjoin(H_temp,'');
 end

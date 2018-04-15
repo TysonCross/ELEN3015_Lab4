@@ -4,9 +4,9 @@ classdef Transaction < handle
     % Tyson Cross 1239448
     
 	properties (SetAccess = private, GetAccess = private)
-        Data % cell array of {'id'[balance]}
+        Data
 	end
-	properties %(SetAccess = private, GetAccess = public)
+	properties (SetAccess = private, GetAccess = public)
         ID_index
         ID_me
         ID_recipient
@@ -20,20 +20,26 @@ classdef Transaction < handle
             obj.Data = people;
             obj.ID_index = [1:length(obj.Data)];
             obj.ID_me = obj.Data{id_num,1};
+            setHash(obj);
         end
       
         function makeTransfer(obj, amount, sender,recipient)
-            if (getBalance(obj,sender)-amount<=0)
+            %makeTransfer() makes a transaction between participants
+            if ~doesExist(obj,sender) || ~doesExist(obj,recipient)
+                error('Invalid ID')
+            elseif (getBalance(obj,sender)-amount<=0)
                 error('Insufficient tokens')
-            elseif strcmp(getID(obj,recipient),getID(obj,sender))
+            elseif strcmp(getSignature(obj,recipient),getSignature(obj,sender))
                 error('Invalid transfer, sender and recipient must be seperate')
             else
                 setBalance(obj,amount,sender);
                 setBalance(obj,amount,recipient);
+                disp(['Transfered ' , num2str(amount), ' tokens to ', getSignature(obj,recipient)]);
                 disp(['New Balance is ',num2str(getBalance(obj,sender)), ' tokens'])
                 obj.Transation_amount = amount;
-                obj.ID_sender = getID(obj,sender);
-                obj.ID_recipient = getID(obj,recipient);
+                obj.ID_sender = getSignature(obj,sender);
+                obj.ID_recipient = getSignature(obj,recipient);
+                setHash(obj);
             end
         end
          
@@ -43,6 +49,7 @@ classdef Transaction < handle
           
         function setBalance(obj,value, id)
             obj.Data{id,2} = obj.Data{id,2} + value;
+            setHash(obj);
         end
           
         function r = getSignature(obj,id)
@@ -63,22 +70,38 @@ classdef Transaction < handle
                 disp(['Removing ', obj.Data(pos,:)])
                 obj.ID_index(pos) = [];
                 obj.Data(pos,:) = [];
+                setHash(obj);
             else
                 disp('ID not found')
             end
         end
         
-            function removeByID(obj,id)
+        function removeByID(obj,id)
+            if doesExist(id)
                 disp(['Removing ',obj.Data(id,:)])
                 obj.ID_index(id) = [];
                 obj.Data(id,:) = [];
+                setHash(obj);    
+            else
+                disp('ID not found')
+            
             end
-        
-%         function setHash(obj)
-%             a = [{char(obj.Data{:})} char{obj.ID_index(:)}]
-%             obj.Hash = hash(a(~isspace(a)));
-%         end
+        end
+
+        function r = doesExist(obj,id)
+            if ismember(id,obj.ID_index)>0
+                r = true;
+            else
+                r = false;
+            end
+        end
+            
+        function setHash(obj)
+            a = flatten({char([obj.Data{:,1}]) num2str([obj.Data{:,2}]) [obj.ID_me] [obj.ID_recipient] [obj.ID_sender] num2str(obj.Transation_amount) [obj.Hash]});
+            obj.Hash = hash(a);
+        end
     end
+
 end
 
 

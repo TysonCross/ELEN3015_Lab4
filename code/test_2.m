@@ -2,7 +2,7 @@ clc; clear all;
 
 n = 3;
 
-a = [ true false false true false false true]
+a = [ true false false true false false true false]
 b = circshift(a, [0 n])     % <- shift circular right
 c = circshift(a, [0 -n])    % <- shift circular left
 
@@ -13,3 +13,5 @@ d = [z d]                   % pad to complete shift
 e = bitand(a,b)
 f = bitor(a,b)
 g = bitxor(~b,c)
+
+

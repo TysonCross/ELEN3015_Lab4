@@ -1,4 +1,5 @@
 % Tyson Cross 1239448
+addpath('SHA256','utilities','Blockchain');
 clc; clear all;
 
 % conversion utilities tests

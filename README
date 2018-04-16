@@ -3,5 +3,55 @@ Tyson Cross 1239448
 
 Lab 4:
 -----
+Prototype digital token payment system and a non-canonical variation of the NIST.FIPS.180-4 SHA-256 (Secure Hashing Algorithm)
 
-    
+:Files included:
+----------------
+├── ELEN3015_Lab4_Report.pdf                        : The main Lab 4 report
+├── README                                          : this file!
+└── code
+    ├── Payment_system.m                            : The prototype payment system and attacks
+    ├── test_conversion_utilities.m                 : Tests for all conversion utilities
+    ├── test_hash.m                                 : Tests and measurements for SHA-256 algorithm
+    │    
+    ├── Blockchain
+    │   ├── LedgerEntry.m                           : Class definition for LedgerEntry
+    │   ├── Transaction.m                           : Class definition for Transaction
+    │   ├── addEntry.m                              : function to add an entry to the ledger
+    │   ├── calculateEntryHash.m                    : wrapper function to calculate the hash of an entry
+    │   ├── calculateHash.m                         : wrapper function to calculate a general hash
+    │   ├── createLedgerEntry.m                     : function to create a new
+    │   ├── createNewTransactionFromLastRecord.m    : function to extract a copy of the last transactional data
+    │   ├── genesisEntry.m                          : function to create the hardcoded genesis block
+    │   ├── getLatestLedgerEntry.m                  : function to determine the last ledger entry
+    │   ├── isEntryValid.m                          : boolean function to check an entry's hash validity
+    │   ├── isValidLedger.m                         : boolean function to check the entire blockchain
+    │   ├── loadPeople.m                            : helper function to populate a pool of participants
+    │   ├── randomTransactionParameters.m           : helper function to generate random transactions
+    │   └── replaceLedger.m                         : function to compare the lengths of competing ledgers
+    ├── SHA256
+    │   ├── Ch.m                                    : The SHA-256 Ch() function
+    │   ├── E_0.m                                   : The SHA-256 Big Sigma_0 function
+    │   ├── E_1.m                                   : The SHA-256 Big Sigma_1 function
+    │   ├── Maj.m                                   : The SHA-256 Maj() function
+    │   ├── ROTL.m                                  : rotate left (circular) function
+    │   ├── ROTR.m                                  : rotate right (circular) function
+    │   ├── SHR.m                                   : bit-shift right function
+    │   ├── hash.m                                  : implementaion of the Secure Hashing 256 algorithm
+    │   ├── mod_addition.m                          : function to perform modular addition in 2^32
+    │   ├── padder.m                                : function to pad and append the length of input message
+    │   ├── sigma_0.m                               : The SHA-256 small sigma_0 function
+    │   └── sigma_1.m                               : The SHA-256 small sigma_1 function
+    └── utilities
+        ├── bin2decimal.m                           : utility function to convert binary to decimal up to 64-bit precision
+        ├── char2logical.m                          : utility function to convert a char array to a logical (binary) array
+        ├── checkLength.m                           : boolean function to check the length of an array
+        ├── checkLogical.m                          : boolean function to check if an array is of type logical
+        ├── checkRange.m                            : boolean function to confirm a valid range
+        ├── dec2binary.m                            : utility function to convert decimal to binary (fixed length)
+        ├── flatten.m                               : utility function to flatten an array to a 1xN array
+        ├── flattenlogical.m                        : utility function to reduce a 1x1xN matrix to a 1xN array
+        ├── logical2char.m                          : utility function to convert a logical array to a char array
+        ├── logical2str.m                           : utility function to convery a logical array to an ASCII string
+        └── str2logical.m                           : utility function to convert an ASCII string to a logical array
+ 

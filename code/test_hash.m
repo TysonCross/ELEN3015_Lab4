@@ -1,5 +1,5 @@
 % Tyson Cross 1239448
-
+addpath('SHA256','utilities','Blockchain');
 clc; clear all;
 
 message = [ 'And above all, watch with glittering eyes the whole world around you '...

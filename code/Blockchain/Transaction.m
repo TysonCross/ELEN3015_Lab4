@@ -8,14 +8,14 @@ classdef Transaction < matlab.mixin.Copyable
 	end
 	properties (SetAccess = private, GetAccess = public)
         ID_index
+    end
+    properties (NonCopyable)
         ID_me
         ID_recipient
         ID_sender
         Timestamp
         Transaction_amount
         Hash
-    end
-    properties (NonCopyable)
         Locked = false;
     end
 	methods
@@ -46,7 +46,7 @@ classdef Transaction < matlab.mixin.Copyable
                 disp('Invalid transfer, sender and recipient must be seperate')
             else
                 obj.ID_me = getSignature(obj,sender);
-                disp('---------------------------------------------------')
+                disp(' ')
                 disp(['Sender:    ', getSignature(obj,sender)])
                 disp(['Recipient: ', getSignature(obj,recipient)])
                 disp(['Transferring ' , num2str(amount), ' tokens']);
@@ -59,8 +59,9 @@ classdef Transaction < matlab.mixin.Copyable
                 setBalance(obj,amount,recipient);
                 disp(['New balance: ', num2str(getBalance(obj,sender)), ' tokens']);
                 setHash(obj);
-                disp(['Transaction completed. (ID: ', obj.Hash, ')']);
-                disp('---------------------------------------------------')
+                disp(['Transaction completed at ', [char(obj.Timestamp)]])
+                disp(['Transaction ID: ', obj.Hash]);
+                disp('---------------------------------------------------------------------------------------------')
                 obj.lock();
             end
         end
@@ -143,7 +144,7 @@ classdef Transaction < matlab.mixin.Copyable
 %     end
     
 %     methods (Access = protected)
-        function alterIdentity(obj, id)                         % Demo function to change ID to be an attacker
+        function alterIdentity(obj, id)                         % Demo function to change ID
             obj.ID_me = getSignature(obj,id);
             setHash(obj);
         end

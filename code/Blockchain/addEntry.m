@@ -5,6 +5,8 @@ function [ ledger ] = addEntry( new_entry, ledger )
 
 if checkEntryValid(new_entry, getLatestLedgerEntry(ledger))
     ledger = [ledger new_entry];
+    ledger(end).getTransactionData().lock();
+
 end
 
 end

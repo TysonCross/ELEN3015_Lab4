@@ -1,4 +1,4 @@
-classdef LedgerEntry
+classdef LedgerEntry < handle
     %LedgerEntry is a class for ledger entry objects, an individual entry in a simple
     %   blockchain of hash-signed transactional records.
     

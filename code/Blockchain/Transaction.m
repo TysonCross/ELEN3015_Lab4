@@ -11,6 +11,7 @@ classdef Transaction < matlab.mixin.Copyable
         ID_me
         ID_recipient
         ID_sender
+        Timestamp
         Transaction_amount
         Hash
     end
@@ -45,16 +46,21 @@ classdef Transaction < matlab.mixin.Copyable
                 disp('Invalid transfer, sender and recipient must be seperate')
             else
                 obj.ID_me = getSignature(obj,sender);
-                disp(['Your balance before transfer was ',num2str(getBalance(obj,sender)), ' tokens']);
-                setBalance(obj,-amount,sender);
-                setBalance(obj,amount,recipient);
-                disp(['Transfered ' , num2str(amount), ' tokens to ', getSignature(obj,recipient)]);
-                disp(['Your new balance is ', num2str(getBalance(obj,sender)), ' tokens']);
-                obj.Transaction_amount = amount;
+                disp('---------------------------------------------------')
+                disp(['Sender:    ', getSignature(obj,sender)])
+                disp(['Recipient: ', getSignature(obj,recipient)])
+                disp(['Transferring ' , num2str(amount), ' tokens']);
+                disp(['Balance before transfer: ',num2str(getBalance(obj,sender)), ' tokens']);
                 obj.ID_sender = getSignature(obj,sender);
                 obj.ID_recipient = getSignature(obj,recipient);
+                obj.Timestamp = datetime(clock);
+                obj.Transaction_amount = amount;
+                setBalance(obj,-amount,sender);
+                setBalance(obj,amount,recipient);
+                disp(['New balance: ', num2str(getBalance(obj,sender)), ' tokens']);
                 setHash(obj);
                 disp(['Transaction completed. (ID: ', obj.Hash, ')']);
+                disp('---------------------------------------------------')
                 obj.lock();
             end
         end
@@ -110,8 +116,8 @@ classdef Transaction < matlab.mixin.Copyable
                     [char(obj.ID_me)],...
                     [char(obj.ID_recipient)],...
                     [char(obj.ID_sender)],...
+                    [char(obj.Timestamp)],...
                     [num2str(obj.Transaction_amount) ]);
-
                 a = a(~isspace(a(:)));
                 obj.Hash = hash(a);
             end

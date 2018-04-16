@@ -1,4 +1,4 @@
-function [ value ] = checkEntryValid( new_entry, last_entry )
+function [ value ] = isEntryValid( new_entry, last_entry )
 %checkEntryValid() checks the latest ledger entry for validity
 
 % Tyson Cross 1239448

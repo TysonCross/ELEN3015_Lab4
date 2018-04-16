@@ -3,7 +3,7 @@ function [ ledger ] = addEntry( new_entry, ledger )
 
 % Tyson Cross 1239448
 
-if checkEntryValid(new_entry, getLatestLedgerEntry(ledger))
+if isEntryValid(new_entry, getLatestLedgerEntry(ledger))
     ledger = [ledger new_entry];
     ledger(end).getTransactionData().lock();
 end

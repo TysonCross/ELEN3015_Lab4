@@ -10,7 +10,7 @@ end
 while reciever==sender
     reciever = randi(N);
 end
-amount = randi(10);
+amount = randi(100);
 
 end
 

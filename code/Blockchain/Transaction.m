@@ -30,7 +30,7 @@ classdef Transaction < matlab.mixin.Copyable
             end
         end
       
-        function makeTransfer(obj, amount, sender,recipient)
+        function makeTransfer(obj, amount, sender, recipient, output)
             %makeTransfer() makes a transaction between participants
             if obj.Locked
                 error('This transaction is already completed')
@@ -45,23 +45,29 @@ classdef Transaction < matlab.mixin.Copyable
             elseif strcmp(getSignature(obj,recipient),getSignature(obj,sender))
                 disp('Invalid transfer, sender and recipient must be seperate')
             else
+                tic;
                 obj.ID_me = getSignature(obj,sender);
-                disp(' ')
-                disp(['Sender:    ', getSignature(obj,sender)])
-                disp(['Recipient: ', getSignature(obj,recipient)])
-                disp(['Transferring ' , num2str(amount), ' tokens']);
-                disp(['Balance before transfer: ',num2str(getBalance(obj,sender)), ' tokens']);
                 obj.ID_sender = getSignature(obj,sender);
                 obj.ID_recipient = getSignature(obj,recipient);
                 obj.Timestamp = datetime(clock);
                 obj.Transaction_amount = amount;
+                original_balance = getBalance(obj,sender);
                 setBalance(obj,-amount,sender);
                 setBalance(obj,amount,recipient);
-                disp(['New balance: ', num2str(getBalance(obj,sender)), ' tokens']);
+                new_balance = getBalance(obj,sender);
                 setHash(obj);
-                disp(['Transaction completed at ', [char(obj.Timestamp)]])
-                disp(['Transaction ID: ', obj.Hash]);
-                disp('---------------------------------------------------------------------------------------------')
+                t = toc;
+                if output
+                    disp(' ')
+                    disp(['Sender:    ', getSignature(obj,sender)])
+                    disp(['Recipient: ', getSignature(obj,recipient)])
+                    disp(['Transferring ' , num2str(amount), ' tokens']);
+                    disp(['Balance before transfer: ',num2str(original_balance), ' tokens']);
+                    disp(['New balance: ', num2str(new_balance), ' tokens']);
+                    disp(['Transaction completed at ', [char(obj.Timestamp), ' in ' num2str(t), ' seconds']])
+                    disp(['Transaction ID: ', obj.Hash]);
+                    disp('---------------------------------------------------------------------------------------------')
+                end
                 obj.lock();
             end
         end

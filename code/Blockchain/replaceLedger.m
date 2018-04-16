@@ -6,7 +6,7 @@ if isValidLedger(new_ledger) && (length(new_ledger) > length(current_ledger))
     disp('New ledger is valid. Replacing old ledger with newly received ledger');
 else
     LEDGER = current_ledger;
-    disp('Received ledger invalid');
+    disp('Received ledger invalid. Retaining original ledger.');
 end
 
 end

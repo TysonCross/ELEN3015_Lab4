@@ -28,7 +28,7 @@ disp(' ')
 disp(' ID                         Signature                                                      Tokens')
 disp('-------------------------------------------------------------------------------------------------')
 for i=1:numel(people)/2
-    disp([' ', num2str(i), '   ', char(people{i,1}), '     ',num2str(people{i,2})])
+    disp([' ', num2str(i), '   ', char(people{i,1}), '     ', num2str(people{i,2})])
 end
 disp('-------------------------------------------------------------------------------------------------')
 original_tokens = LEDGER(end).getTransactionData.getTotalBalance;
@@ -41,16 +41,20 @@ disp('Perform a transaction as another person (for demonstration)...')
 tx3 = createNewTransactionFromLastRecord(LEDGER, my_ID);
 [ amount, sender, reciever  ] = randomTransactionParameters(tx3);
 tx3.alterIdentity(sender);
-tx3.makeTransfer(amount, sender, reciever);
+tx3.makeTransfer(amount, sender, reciever, true);
 lg3 = createLedgerEntry(tx3,LEDGER);
 LEDGER = addEntry(lg3, LEDGER);
 clear tx3;
 
 %% Attacks
 disp(' ')
+disp('Attempting attacks on the ledger')
+disp('-------')
+disp(' ')
 disp('Attempt to repeat a previous transaction...')
 % will fail because of an invalid index check
-LEDGER = addEntry(lg3, LEDGER); 
+LEDGER = addEntry(lg3, LEDGER);
+clear lg3;
 
 disp(' ')
 disp('Attempt to add an invalid entry, favouring Person1@Computer1...')
@@ -58,7 +62,7 @@ disp('Attempt to add an invalid entry, favouring Person1@Computer1...')
 % will fail because of an authentication check
 tx_invalid = createNewTransactionFromLastRecord(LEDGER, my_ID);
 tx_invalid.alterIdentity(my_ID);
-tx_invalid.makeTransfer(1000, 2, 1);
+tx_invalid.makeTransfer(1000, 2, 1, true);
 clear tx_invalid;
 
 disp(' ')
@@ -66,7 +70,7 @@ disp('Attempt to transfer more tokens than current balance...')
 tx_overspend = createNewTransactionFromLastRecord(LEDGER, my_ID);
 tx_overspend.alterIdentity(my_ID);
 amount = tx_overspend.getBalance(my_ID) + 1000;
-tx_overspend.makeTransfer(amount, my_ID, 2);
+tx_overspend.makeTransfer(amount, my_ID, 2, true);
 clear tx_overspend;
 
 disp(' ')
@@ -85,13 +89,16 @@ disp('Attempt to insert an forged transaction into the ledger...')
 lg_insert = copy(LEDGER(end));
 tx_insert = copy(lg_insert.getTransactionData);
 tx_insert.alterIdentity(2);
-tx_insert.makeTransfer(10, 2,1);
+tx_insert.makeTransfer(10, 2, 1, false);
 lg_insert_fake = createLedgerEntry(tx_insert,LEDGER);
 try lg_insert.Index =lg_insert_fake.Index;
 catch
-    disp('Unable to alter the index, most properties of the class are read-only')
+    disp('Unable to alter the index, relevant properties of the class are read-only')
 end
-LEDGER = addEntry(lg_insert, LEDGER);
+try LEDGER = addEntry(lg_insert, LEDGER);
+catch
+    disp('Unable to add ')
+end
 clear tx_insert lg_insert lg_insert_fake;
 
 disp(' ')
@@ -106,48 +113,55 @@ catch
         disp('The ledger has been corrupted')
     end
 end
+clear tx_corrupt lg_corrupt;
 
 % Make a fork of the ledger...
 ledger_competing = copy(LEDGER);
 
 disp(' ')
-disp('Perform some transactions to grow the ledger...')
-for i=4:10
+disp('Perform some transactions to grow the ledger... (ouput disabled for brevity)')
+for i=4:6
     tx_new = createNewTransactionFromLastRecord(LEDGER, my_ID);
     [ amount, sender, reciever  ] = randomTransactionParameters(tx_new);
     tx_new.alterIdentity(sender);
-    tx_new.makeTransfer(amount, sender, reciever);
+    tx_new.makeTransfer(amount, sender, reciever, false);
     lg_new = createLedgerEntry(tx_new,LEDGER);
     LEDGER = addEntry(lg_new, LEDGER);
-    disp(' ')
+    fprintf('.')
 end
-clear tx_new;
+disp(' ')
+clear lg_new tx_new;
 
 disp(' ')
 disp('Attempt to replace the ledger with a shorter, competing ledger...')
 LEDGER = replaceLedger(ledger_competing, LEDGER);
 
 disp(' ')
-disp('Perform some transactions on the competing ledger...')
-for i=4:10
-    tx_new = createNewTransactionFromLastRecord(ledger_competing, my_ID);
-    [ amount, sender, reciever  ] = randomTransactionParameters(tx_new);
-    tx_new.alterIdentity(sender);
-    tx_new.makeTransfer(amount, sender, reciever);
-    lg_new = createLedgerEntry(tx_new,ledger_competing);
-    ledger_competing = addEntry(lg_new, ledger_competing);
-    disp(' ')
+disp('Perform more transactions on the competing ledger... (ouput disabled for brevity)')
+for i=4:8
+    tx_competing = createNewTransactionFromLastRecord(ledger_competing, my_ID);
+    [ amount, sender, reciever  ] = randomTransactionParameters(tx_competing);
+    tx_competing.alterIdentity(sender);
+    tx_competing.makeTransfer(amount, sender, reciever, false);
+    lg_competing = createLedgerEntry(tx_competing,ledger_competing);
+    ledger_competing = addEntry(lg_competing, ledger_competing);
+    fprintf('.')
 end
-clear tx_new;
+disp(' ')
+clear lg_competing tx_competing;
 
 disp(' ')
-disp('Attempt to replace the ledger with a longer, competing ledger...')
+disp('Attempt to replace the ledger with the longer competing ledger...')
 LEDGER = replaceLedger(ledger_competing, LEDGER);
 
+disp(' ')
+disp('End of attacks')
+
 %% Output
-disp('')
+disp(' ')
+disp(' ')
 disp('····················································')
-disp(['Total Tokens at initialisation:         ', num2str(original_tokens) ' Tokens'])
+disp(['Total Tokens at original initialisation:', num2str(original_tokens) ' Tokens'])
 disp(['Total Tokens in pool at end of testing: ', num2str(LEDGER(end).getTransactionData.getTotalBalance) ' Tokens'])
 disp('····················································')
 

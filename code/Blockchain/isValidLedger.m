@@ -8,7 +8,7 @@ function [ value ] = isValidLedger( ledger )
         val = false;
     else
         for i=2:length(ledger)
-            if checkEntryValid(ledger(i),ledger(i-1))
+            if isEntryValid(ledger(i),ledger(i-1))
                 val = true;
             else
                 val = false;

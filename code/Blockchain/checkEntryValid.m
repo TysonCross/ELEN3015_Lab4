@@ -3,25 +3,16 @@ function [ value ] = checkEntryValid( new_entry, last_entry )
 
 % Tyson Cross 1239448
 
-people = loadPeople(5);
-tx1=Transaction(people,1);
-
-last_entry = LedgerEntry(1,'1',datenum(clock),
-if last_entry.getIndex() + 1
-    
-% var isValidNewBlock = (newBlock, previousBlock) => {
-%     if (previousBlock.index + 1 !== newBlock.index) {
-%         console.log('invalid index');
-%         return false;
-%     } else if (previousBlock.hash !== newBlock.previousHash) {
-%         console.log('invalid previoushash');
-%         return false;
-%     } else if (calculateHashForBlock(newBlock) !== newBlock.hash) {
-%         console.log('invalid hash: ' + calculateHashForBlock(newBlock) + ' ' + newBlock.hash);
-%         return false;
-%     }
-%     return true;
-% };
+value = false;
+if new_entry.Index ~= last_entry.Index()+1
+    disp('Invalid chain, index is not consistent')
+elseif new_entry.PreviousHash ~= last_entry.Hash
+    disp('Invalid chain, hash values do not match')
+elseif calculateEntryHash(new_entry) ~= new_entry.Hash
+    disp('Invalid hash!')
+else
+    value = true;
+end
 
 end
 

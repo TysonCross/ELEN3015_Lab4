@@ -1,23 +1,30 @@
 classdef LedgerEntry
-    %LedgerEntry Summary of this class goes here
-    %   Detailed explanation goes here
-   properties
+    %LedgerEntry is a class for ledger entry objects, an individual entry in a simple
+    %   blockchain of hash-signed transactional records.
+    
+    % Tyson Cross 1239448
+    
+	properties (SetAccess = private, GetAccess = private)
+        TransactionData
+    end
+    properties (SetAccess = private, GetAccess = public)
         Index
-   end
-   properties (SetAccess = private, GetAccess = public)
         PreviousHash
         Timestamp
-        Data
         Hash
-   end
-   methods
-      function obj = LedgerEntry(index, previousHash, timestamp, data, hash)
-         obj.Index = index;
-         obj.PreviousHash = previousHash;
-         obj.Timestamp = timestamp;
-         obj.Data = data;
-         obj.Hash = hash;
-         end
-   end
+    end
+    methods
+        function obj = LedgerEntry(index, previousHash, timestamp, data, hash)
+        %LedgerEntry() contructor, creates the ledger entry
+            obj.Index = index;
+            obj.PreviousHash = previousHash;
+            obj.Timestamp = timestamp;
+            obj.TransactionData = data;
+            obj.Hash = hash;
+        end
+        function r = getTransactionData(obj)
+            r = obj.TransactionData;
+        end
+    end
 end
 

@@ -5,6 +5,7 @@ classdef Transaction < handle
     
 	properties (SetAccess = private, GetAccess = private)
         Data
+        Lock
 	end
 	properties (SetAccess = private, GetAccess = public)
         ID_index
@@ -15,12 +16,17 @@ classdef Transaction < handle
         Hash
 	end
 	methods
-        function obj = Transaction(people, id_num)
+        function obj = Transaction(people, signature)
             %Transaction() contructor, sets the initial financial data
             obj.Data = people;
             obj.ID_index = [1:length(obj.Data)];
-            obj.ID_me = obj.Data{id_num,1};
-            setHash(obj);
+            if ~isAMember(obj, signature) 
+                error('Not a participant, sorry')
+            else
+                obj.ID_me = signature;
+                setHash(obj);
+            end
+            obj.Lock = false;
         end
       
         function makeTransfer(obj, amount, sender,recipient)
@@ -40,6 +46,7 @@ classdef Transaction < handle
                 obj.ID_sender = getSignature(obj,sender);
                 obj.ID_recipient = getSignature(obj,recipient);
                 setHash(obj);
+                obj.Lock = true;
             end
         end
          
@@ -52,7 +59,7 @@ classdef Transaction < handle
             setHash(obj);
         end
           
-        function r = getSignature(obj,id)
+        function r = getSignature(obj,id) 
             r = obj.Data{id,1};
         end
         
@@ -76,7 +83,7 @@ classdef Transaction < handle
             end
         end
         
-        function removeByID(obj,id)
+        function removeByID(obj,id) 
             if doesExist(id)
                 disp(['Removing ',obj.Data(id,:)])
                 obj.ID_index(id) = [];
@@ -88,6 +95,14 @@ classdef Transaction < handle
             end
         end
 
+        function r = isAMember(obj, signature)
+            if ismember(signature,{obj.Data{:,1}})>0
+                r = true;
+            else
+                r = false;
+            end
+        end
+        
         function r = doesExist(obj,id)
             if ismember(id,obj.ID_index)>0
                 r = true;
@@ -97,10 +112,16 @@ classdef Transaction < handle
         end
             
         function setHash(obj)
-            a = squeeze([char(flatten({char([obj.Data{:,1}]) num2str([obj.Data{:,2}]) [obj.ID_me]...
-                [obj.ID_recipient] [obj.ID_sender] num2str(obj.Transation_amount)}))]);
-            a = char(a(~isspace(a(:))));
-            obj.Hash = hash(a')
+            a = strcat(...
+                [char(obj.Data{:,1})],...
+                [char(obj.Data{:,2})],...
+                [char(obj.ID_me)],...
+                [char(obj.ID_recipient)],...
+                [char(obj.ID_sender)],...
+                [num2str(obj.Transation_amount) ]);
+
+            a = a(~isspace(a(:)));
+            obj.Hash = hash(a);
         end
     end
 

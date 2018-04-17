@@ -1,4 +1,8 @@
 % Tyson Cross 1239448
+
+% Structural ideas based on the broad concept of Bitcoin https://github.com/bitcoin/bitcoin
+% with some implementation design from Naivechain https://github.com/lhartikk/naivechain
+
 addpath('SHA256','utilities','Blockchain');
 clc; clear all;
 
